@@ -3,105 +3,97 @@ import pandas as pd
 
 
 # -----------------------------
-# Page Configuration
+# Configuration
 # -----------------------------
 
 st.set_page_config(
-    page_title="Financial Analyst App",
+    page_title="Financial Analyst Pro",
     page_icon="📊",
     layout="wide"
 )
 
 
-st.title("📊 Financial Analyst App")
-st.write(
-    "Upload the 3 financial statements to begin analysis."
+# -----------------------------
+# Styling
+# -----------------------------
+
+st.markdown(
+"""
+<style>
+
+.metric-card {
+    background-color: #f8f9fa;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #e5e7eb;
+}
+
+</style>
+""",
+unsafe_allow_html=True
 )
 
 
 # -----------------------------
-# File Upload
+# Header
 # -----------------------------
 
-balance_file = st.file_uploader(
-    "Upload Balance Sheet (SOFP)",
-    type=["xlsx"]
-)
+st.title("📊 Financial Analyst Pro")
 
-income_file = st.file_uploader(
-    "Upload Income Statement (SOPL)",
-    type=["xlsx"]
-)
-
-cashflow_file = st.file_uploader(
-    "Upload Cash Flow Statement (SOCF)",
-    type=["xlsx"]
+st.caption(
+    "AI-powered financial statement analysis platform"
 )
 
 
-
 # -----------------------------
-# Cleaning Function
+# Upload Section
 # -----------------------------
 
-def clean_dataframe(df):
+st.subheader("📂 Upload Financial Statements")
 
-    # Remove completely empty rows
-    df = df.dropna(
-        how="all"
+
+col1, col2, col3 = st.columns(3)
+
+
+with col1:
+    balance_file = st.file_uploader(
+        "Balance Sheet",
+        type=["xlsx"]
     )
 
-    # Remove completely empty columns
-    df = df.dropna(
-        axis=1,
-        how="all"
+
+with col2:
+    income_file = st.file_uploader(
+        "Income Statement",
+        type=["xlsx"]
     )
 
 
-    # Clean text formatting
-    df = df.map(
-        lambda x: x.strip()
-        if isinstance(x, str)
-        else x
+with col3:
+    cashflow_file = st.file_uploader(
+        "Cash Flow Statement",
+        type=["xlsx"]
     )
 
-    return df
+
+files_ready = (
+    balance_file
+    and income_file
+    and cashflow_file
+)
 
 
-
-# -----------------------------
-# Detect Rows
-# -----------------------------
-
-def display_rows(df, title):
-
-    st.subheader(title)
-
-    for index, row in df.iterrows():
-
-        values = row.dropna().tolist()
-
-        if values:
-
-            st.write(
-                values
-            )
-
-
-
-# -----------------------------
-# Main Application
-# -----------------------------
-
-if balance_file and income_file and cashflow_file:
+if files_ready:
 
 
     st.success(
-        "✅ All 3 statements uploaded successfully!"
+        "All financial statements loaded successfully"
     )
 
 
-    # Read Excel without assuming structure
+    # -----------------------------
+    # Load Data
+    # -----------------------------
 
     balance_df = pd.read_excel(
         balance_file,
@@ -122,108 +114,142 @@ if balance_file and income_file and cashflow_file:
 
 
 
-    # Clean data
+    # Clean
 
-    balance_df = clean_dataframe(
-        balance_df
+    balance_df.dropna(
+        how="all",
+        inplace=True
     )
 
-    income_df = clean_dataframe(
-        income_df
+    income_df.dropna(
+        how="all",
+        inplace=True
     )
 
-    cashflow_df = clean_dataframe(
-        cashflow_df
+    cashflow_df.dropna(
+        how="all",
+        inplace=True
     )
 
 
 
     # -----------------------------
-    # Display Raw Statements
+    # Dashboard
     # -----------------------------
 
     st.divider()
 
     st.header(
-        "📋 Financial Statements"
+        "📈 Executive Dashboard"
     )
 
 
-    with st.expander(
-        "Balance Sheet (SOFP)"
-    ):
+    c1,c2,c3,c4 = st.columns(4)
+
+
+    with c1:
+        st.metric(
+            "Financial Health",
+            "Analyzing..."
+        )
+
+
+    with c2:
+        st.metric(
+            "Liquidity",
+            "Pending"
+        )
+
+
+    with c3:
+        st.metric(
+            "Profitability",
+            "Pending"
+        )
+
+
+    with c4:
+        st.metric(
+            "Risk Level",
+            "Pending"
+        )
+
+
+
+    # -----------------------------
+    # Statements
+    # -----------------------------
+
+    st.divider()
+
+    st.header(
+        "📑 Financial Statements"
+    )
+
+
+    tab1,tab2,tab3 = st.tabs(
+        [
+            "Balance Sheet",
+            "Income Statement",
+            "Cash Flow"
+        ]
+    )
+
+
+    with tab1:
 
         st.dataframe(
             balance_df,
-            use_container_width=True
+            use_container_width=True,
+            height=500
         )
 
 
-    with st.expander(
-        "Income Statement (SOPL)"
-    ):
+    with tab2:
 
         st.dataframe(
             income_df,
-            use_container_width=True
+            use_container_width=True,
+            height=500
         )
 
 
-    with st.expander(
-        "Cash Flow Statement (SOCF)"
-    ):
+    with tab3:
 
         st.dataframe(
             cashflow_df,
-            use_container_width=True
+            use_container_width=True,
+            height=500
         )
 
 
 
     # -----------------------------
-    # Row Detection
+    # Next Engine
     # -----------------------------
 
     st.divider()
 
     st.header(
-        "🔍 Balance Sheet Row Names"
-    )
-
-
-    display_rows(
-        balance_df,
-        "Detected Balance Sheet Rows"
-    )
-
-
-
-    st.divider()
-
-
-    st.header(
-        "📈 Financial Ratio Dashboard"
+        "🤖 Analyst Insights"
     )
 
 
     st.info(
         """
-        Data extraction completed.
+        Financial intelligence engine is ready.
 
-        Next version will automatically calculate:
-
-        ✅ Current Ratio
-        ✅ Quick Ratio
-        ✅ Debt-to-Equity
-        ✅ Working Capital
-        ✅ Profit Margins
-        ✅ Cash Flow Metrics
+        Next update:
+        • Automatic row recognition
+        • Ratio calculations
+        • Trend analysis
+        • AI financial commentary
         """
     )
 
 
 else:
 
-    st.warning(
-        "Please upload all 3 financial statements to start analysis."
+    st.info(
+        "Upload all three statements to activate the dashboard."
     )
