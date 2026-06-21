@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 
 
+# -----------------------------
+# Page Configuration
+# -----------------------------
+
 st.set_page_config(
     page_title="Financial Analyst App",
     page_icon="📊",
@@ -11,13 +15,13 @@ st.set_page_config(
 
 st.title("📊 Financial Analyst App")
 st.write(
-    "Upload financial statements to begin automated analysis."
+    "Upload the 3 financial statements to begin analysis."
 )
 
 
-# ----------------------------
-# Upload Files
-# ----------------------------
+# -----------------------------
+# File Upload
+# -----------------------------
 
 balance_file = st.file_uploader(
     "Upload Balance Sheet (SOFP)",
@@ -36,19 +40,25 @@ cashflow_file = st.file_uploader(
 
 
 
-# ----------------------------
-# Functions
-# ----------------------------
+# -----------------------------
+# Cleaning Function
+# -----------------------------
 
 def clean_dataframe(df):
 
-    # Remove empty rows
-    df = df.dropna(how="all")
+    # Remove completely empty rows
+    df = df.dropna(
+        how="all"
+    )
 
-    # Remove empty columns
-    df = df.dropna(axis=1, how="all")
+    # Remove completely empty columns
+    df = df.dropna(
+        axis=1,
+        how="all"
+    )
 
-    # Clean text spaces
+
+    # Clean text formatting
     df = df.map(
         lambda x: x.strip()
         if isinstance(x, str)
@@ -59,54 +69,51 @@ def clean_dataframe(df):
 
 
 
-def find_label_column(df):
+# -----------------------------
+# Detect Rows
+# -----------------------------
 
-    """
-    Finds the column containing financial labels
-    """
+def display_rows(df, title):
 
-    scores = {}
+    st.subheader(title)
 
-    for col in df.columns:
+    for index, row in df.iterrows():
 
-        score = (
-            df[col]
-            .astype(str)
-            .str.len()
-            .mean()
-        )
+        values = row.dropna().tolist()
 
-        scores[col] = score
+        if values:
 
-
-    return max(
-        scores,
-        key=scores.get
-    )
+            st.write(
+                values
+            )
 
 
 
-# ----------------------------
-# Read Files
-# ----------------------------
+# -----------------------------
+# Main Application
+# -----------------------------
 
 if balance_file and income_file and cashflow_file:
 
 
     st.success(
-        "✅ All statements uploaded successfully!"
+        "✅ All 3 statements uploaded successfully!"
     )
 
+
+    # Read Excel without assuming structure
 
     balance_df = pd.read_excel(
         balance_file,
         header=None
     )
 
+
     income_df = pd.read_excel(
         income_file,
         header=None
     )
+
 
     cashflow_df = pd.read_excel(
         cashflow_file,
@@ -114,21 +121,36 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    balance_df = clean_dataframe(balance_df)
-    income_df = clean_dataframe(income_df)
-    cashflow_df = clean_dataframe(cashflow_df)
+
+    # Clean data
+
+    balance_df = clean_dataframe(
+        balance_df
+    )
+
+    income_df = clean_dataframe(
+        income_df
+    )
+
+    cashflow_df = clean_dataframe(
+        cashflow_df
+    )
 
 
 
-    # ----------------------------
-    # Display Statements
-    # ----------------------------
+    # -----------------------------
+    # Display Raw Statements
+    # -----------------------------
 
-    st.header("📋 Financial Statements")
+    st.divider()
+
+    st.header(
+        "📋 Financial Statements"
+    )
 
 
     with st.expander(
-        "Balance Sheet"
+        "Balance Sheet (SOFP)"
     ):
 
         st.dataframe(
@@ -138,7 +160,7 @@ if balance_file and income_file and cashflow_file:
 
 
     with st.expander(
-        "Income Statement"
+        "Income Statement (SOPL)"
     ):
 
         st.dataframe(
@@ -148,7 +170,7 @@ if balance_file and income_file and cashflow_file:
 
 
     with st.expander(
-        "Cash Flow Statement"
+        "Cash Flow Statement (SOCF)"
     ):
 
         st.dataframe(
@@ -158,64 +180,50 @@ if balance_file and income_file and cashflow_file:
 
 
 
-    # ----------------------------
+    # -----------------------------
     # Row Detection
-    # ----------------------------
-
-
-    st.divider()
-
-    st.header(
-        "🔍 Balance Sheet Row Detection"
-    )
-
-
-    label_column = find_label_column(
-        balance_df
-    )
-
-
-    st.write(
-        "Detected label column:",
-        label_column
-    )
-
-
-    rows = (
-        balance_df[label_column]
-        .dropna()
-        .tolist()
-    )
-
-
-    for row in rows:
-
-        st.write(
-            "•",
-            row
-        )
-
-
-
-    # ----------------------------
-    # Next Development
-    # ----------------------------
+    # -----------------------------
 
     st.divider()
 
     st.header(
-        "📈 Financial Analysis"
+        "🔍 Balance Sheet Row Names"
+    )
+
+
+    display_rows(
+        balance_df,
+        "Detected Balance Sheet Rows"
+    )
+
+
+
+    st.divider()
+
+
+    st.header(
+        "📈 Financial Ratio Dashboard"
     )
 
 
     st.info(
         """
-        Data extraction complete.
+        Data extraction completed.
 
-        Next upgrade:
-        ✅ Automatically detect Assets
-        ✅ Detect Liabilities
-        ✅ Detect Equity
-        ✅ Calculate financial ratios
+        Next version will automatically calculate:
+
+        ✅ Current Ratio
+        ✅ Quick Ratio
+        ✅ Debt-to-Equity
+        ✅ Working Capital
+        ✅ Profit Margins
+        ✅ Cash Flow Metrics
         """
+    )
+
+
+else:
+
+    st.warning(
+        "Please upload all 3 financial statements to start analysis."
     )
