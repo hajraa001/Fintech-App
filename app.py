@@ -1,49 +1,64 @@
 import streamlit as st
 import pandas as pd
 
-st.title("Financial Analyst App")
+st.set_page_config(
+    page_title="Financial Analyst App",
+    page_icon="📊",
+    layout="wide"
+)
 
+st.title("📊 Financial Analyst App")
+st.write("Upload the 3 financial statements to begin analysis.")
+
+# Upload files
 balance_file = st.file_uploader(
-    "Upload Balance Sheet",
+    "Upload Balance Sheet (SOFP)",
     type=["xlsx"]
 )
 
 income_file = st.file_uploader(
-    "Upload Income Statement",
+    "Upload Income Statement (SOPL)",
     type=["xlsx"]
 )
 
 cashflow_file = st.file_uploader(
-    "Upload Cash Flow Statement",
+    "Upload Cash Flow Statement (SOCF)",
     type=["xlsx"]
 )
 
+# Process files when all are uploaded
 if balance_file and income_file and cashflow_file:
-    st.success("All 3 statements uploaded!")
 
+    st.success("✅ All 3 statements uploaded successfully!")
+
+    # Read Excel files
     balance_df = pd.read_excel(balance_file, skiprows=3)
     income_df = pd.read_excel(income_file, skiprows=3)
     cashflow_df = pd.read_excel(cashflow_file, skiprows=3)
 
-    st.write("Balance Sheet")
+    # Display data
+    st.subheader("📋 Balance Sheet (SOFP)")
     st.dataframe(balance_df.head(20))
 
-    st.write("Income Statement")
+    st.subheader("📋 Income Statement (SOPL)")
     st.dataframe(income_df.head(20))
 
-    st.write("Cash Flow Statement")
+    st.subheader("📋 Cash Flow Statement (SOCF)")
     st.dataframe(cashflow_df.head(20))
-    st.success("All 3 statements uploaded!")
 
-    balance_df = pd.read_excel(balance_file, skiprows=3)
-    income_df = pd.read_excel(income_file, skiprows=3)
-    cashflow_df = pd.read_excel(cashflow_file, skiprows=3)
+    # Show row names for debugging
+    st.subheader("🔍 Balance Sheet Row Names")
 
-    st.subheader("Balance Sheet")
-    st.dataframe(balance_df.head(20))
+    try:
+        for item in balance_df.iloc[:, 0]:
+            st.write(item)
+    except:
+        st.error("Could not display row names.")
 
-    st.subheader("Income Statement")
-    st.dataframe(income_df.head(20))
+    st.divider()
 
-    st.subheader("Cash Flow Statement")
-    st.dataframe(cashflow_df.head(20))
+    st.subheader("📈 Financial Ratio Dashboard")
+
+    st.info(
+        "Next step: We will connect the actual Assets, Liabilities, Equity, Revenue, and Net Income values and calculate ratios automatically."
+    )
