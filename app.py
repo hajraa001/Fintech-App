@@ -46,14 +46,16 @@ if balance_file and income_file and cashflow_file:
     st.subheader("📋 Cash Flow Statement (SOCF)")
     st.dataframe(cashflow_df.head(20))
 
-    # Show row names for debugging
-    st.subheader("🔍 Balance Sheet Row Names")
+    st.subheader("🔍 Balance Sheet Data Inspector")
 
-    try:
-        for item in balance_df.iloc[:, 0]:
-            st.write(item)
-    except:
-        st.error("Could not display row names.")
+st.write(
+    "These are the detected row labels:"
+)
+
+rows = balance_df.iloc[:,0].dropna()
+
+for row in rows:
+    st.write("•", row)
 
     st.divider()
 
