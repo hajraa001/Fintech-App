@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 
-# ==============================
-# APP CONFIG
-# ==============================
+# =====================================
+# CONFIGURATION
+# =====================================
 
 st.set_page_config(
     page_title="Financial Analyst Pro",
@@ -13,22 +14,109 @@ st.set_page_config(
 )
 
 
-# ==============================
-# HEADER
-# ==============================
+# =====================================
+# STYLE
+# =====================================
 
-st.title("📊 Financial Analyst Pro")
+st.markdown(
+"""
+<style>
 
-st.caption(
-    "Automated financial statement analysis dashboard"
+.main-header {
+    font-size: 40px;
+    font-weight: 700;
+}
+
+.card {
+    padding: 20px;
+    border-radius: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e5e7eb;
+}
+
+</style>
+""",
+unsafe_allow_html=True
 )
 
 
-# ==============================
-# FUNCTIONS
-# ==============================
 
-def clean_data(df):
+# =====================================
+# TITLE
+# =====================================
+
+st.markdown(
+"""
+<div class="main-header">
+📊 Financial Analyst Pro
+</div>
+""",
+unsafe_allow_html=True
+)
+
+st.caption(
+"Automated financial intelligence platform | Rieter Holding Ltd. 2025"
+)
+
+
+
+# =====================================
+# SIDEBAR
+# =====================================
+
+st.sidebar.title(
+"Navigation"
+)
+
+
+page = st.sidebar.radio(
+    "Go to",
+    [
+        "🏠 Dashboard",
+        "📄 Statements",
+        "📈 Ratios",
+        "⚠️ Risk Analysis"
+    ]
+)
+
+
+
+# =====================================
+# UPLOAD AREA
+# =====================================
+
+st.sidebar.divider()
+
+st.sidebar.subheader(
+"Upload Reports"
+)
+
+
+balance_file = st.sidebar.file_uploader(
+"SOFP - Balance Sheet",
+type=["xlsx"]
+)
+
+
+income_file = st.sidebar.file_uploader(
+"SOFL - Income Statement",
+type=["xlsx"]
+)
+
+
+cashflow_file = st.sidebar.file_uploader(
+"SOCF - Cash Flow",
+type=["xlsx"]
+)
+
+
+
+# =====================================
+# FUNCTIONS
+# =====================================
+
+
+def clean_dataframe(df):
 
     df = df.dropna(
         how="all"
@@ -39,9 +127,11 @@ def clean_data(df):
         how="all"
     )
 
+
     df = df.map(
-        lambda x: x.strip()
-        if isinstance(x, str)
+        lambda x:
+        x.strip()
+        if isinstance(x,str)
         else x
     )
 
@@ -49,16 +139,21 @@ def clean_data(df):
 
 
 
-def find_row(df, keywords):
 
-    for keyword in keywords:
+def search_row(df, names):
+
+    """
+    Finds financial statement rows
+    """
+
+    for name in names:
 
         result = df[
             df.astype(str)
             .apply(
-                lambda x:
-                x.str.contains(
-                    keyword,
+                lambda row:
+                row.str.contains(
+                    name,
                     case=False,
                     na=False
                 )
@@ -68,86 +163,53 @@ def find_row(df, keywords):
         ]
 
         if not result.empty:
+
             return result.iloc[0]
+
 
     return None
 
 
 
-def extract_number(row):
+
+def extract_value(row):
 
     if row is None:
+
         return 0
 
 
-    numbers = []
+    values=[]
 
-    for value in row:
+
+    for item in row:
 
         if isinstance(
-            value,
+            item,
             (int,float)
         ):
 
-            numbers.append(value)
+            values.append(item)
 
 
-    if numbers:
-        return numbers[-1]
+    if values:
+
+        return values[-1]
 
 
     return 0
 
 
 
-# ==============================
-# UPLOAD SECTION
-# ==============================
-
-st.subheader("📂 Upload Financial Statements")
-
-
-col1,col2,col3 = st.columns(3)
-
-
-with col1:
-
-    balance_file = st.file_uploader(
-        "Balance Sheet",
-        type="xlsx"
-    )
-
-
-with col2:
-
-    income_file = st.file_uploader(
-        "Income Statement",
-        type="xlsx"
-    )
-
-
-with col3:
-
-    cashflow_file = st.file_uploader(
-        "Cash Flow",
-        type="xlsx"
-    )
-
+# =====================================
+# LOAD FILES
+# =====================================
 
 
 if balance_file and income_file and cashflow_file:
 
 
-    st.success(
-        "✅ All statements uploaded"
-    )
-
-
-    # ==============================
-    # READ FILES
-    # ==============================
-
-    balance = clean_data(
+    balance = clean_dataframe(
         pd.read_excel(
             balance_file,
             header=None
@@ -155,7 +217,7 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    income = clean_data(
+    income = clean_dataframe(
         pd.read_excel(
             income_file,
             header=None
@@ -163,7 +225,7 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    cashflow = clean_data(
+    cashflow = clean_dataframe(
         pd.read_excel(
             cashflow_file,
             header=None
@@ -171,13 +233,44 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    # ==============================
-    # EXTRACT BALANCE VALUES
-    # ==============================
+
+    # =====================================
+    # BALANCE SHEET EXTRACTION
+    # =====================================
 
 
-    current_assets = extract_number(
-        find_row(
+    cash = extract_value(
+        search_row(
+            balance,
+            [
+                "Cash and cash equivalents"
+            ]
+        )
+    )
+
+
+    receivables = extract_value(
+        search_row(
+            balance,
+            [
+                "Trade receivables"
+            ]
+        )
+    )
+
+
+    inventory = extract_value(
+        search_row(
+            balance,
+            [
+                "Inventories"
+            ]
+        )
+    )
+
+
+    current_assets = extract_value(
+        search_row(
             balance,
             [
                 "Current assets"
@@ -186,18 +279,8 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    current_liabilities = extract_number(
-        find_row(
-            balance,
-            [
-                "Current liabilities"
-            ]
-        )
-    )
-
-
-    total_assets = extract_number(
-        find_row(
+    total_assets = extract_value(
+        search_row(
             balance,
             [
                 "Assets"
@@ -206,8 +289,18 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    liabilities = extract_number(
-        find_row(
+    current_liabilities = extract_value(
+        search_row(
+            balance,
+            [
+                "Current liabilities"
+            ]
+        )
+    )
+
+
+    total_liabilities = extract_value(
+        search_row(
             balance,
             [
                 "Liabilities"
@@ -216,8 +309,8 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    equity = extract_number(
-        find_row(
+    equity = extract_value(
+        search_row(
             balance,
             [
                 "Shareholders’ equity",
@@ -227,152 +320,46 @@ if balance_file and income_file and cashflow_file:
     )
 
 
-    # ==============================
-    # RATIOS
-    # ==============================
+
+    # =====================================
+    # INCOME STATEMENT EXTRACTION
+    # =====================================
 
 
-    current_ratio = 0
-
-    if current_liabilities:
-
-        current_ratio = (
-            current_assets /
-            current_liabilities
-        )
-
-
-    debt_equity = 0
-
-    if equity:
-
-        debt_equity = (
-            liabilities /
-            equity
-        )
-
-
-    working_capital = (
-        current_assets -
-        current_liabilities
-    )
-
-
-
-    # ==============================
-    # DASHBOARD
-    # ==============================
-
-
-    st.divider()
-
-    st.header(
-        "📈 Financial Dashboard"
-    )
-
-
-    a,b,c,d = st.columns(4)
-
-
-    a.metric(
-        "Current Ratio",
-        f"{current_ratio:.2f}x"
-    )
-
-
-    b.metric(
-        "Debt / Equity",
-        f"{debt_equity:.2f}"
-    )
-
-
-    c.metric(
-        "Working Capital",
-        f"{working_capital:,.0f}"
-    )
-
-
-    d.metric(
-        "Total Assets",
-        f"{total_assets:,.0f}"
-    )
-
-
-
-    # ==============================
-    # STATEMENT VIEW
-    # ==============================
-
-
-    st.divider()
-
-    st.header(
-        "📑 Statements"
-    )
-
-
-    tab1,tab2,tab3 = st.tabs(
-        [
-            "Balance Sheet",
-            "Income Statement",
-            "Cash Flow"
-        ]
-    )
-
-
-    with tab1:
-
-        st.dataframe(
-            balance,
-            use_container_width=True
-        )
-
-
-    with tab2:
-
-        st.dataframe(
+    revenue = extract_value(
+        search_row(
             income,
-            use_container_width=True
+            [
+                "Sales",
+                "Revenue"
+            ]
         )
-
-
-    with tab3:
-
-        st.dataframe(
-            cashflow,
-            use_container_width=True
-        )
-
-
-
-    # ==============================
-    # SUMMARY
-    # ==============================
-
-
-    st.divider()
-
-    st.header(
-        "🤖 Analyst Summary"
     )
 
 
-    if current_ratio >= 1:
-
-        st.success(
-            "Liquidity position appears healthy."
+    net_income = extract_value(
+        search_row(
+            income,
+            [
+                "Net profit",
+                "Profit for the year",
+                "Net income"
+            ]
         )
+    )
 
-    else:
 
-        st.warning(
-            "Liquidity may require attention."
+
+    # =====================================
+    # CASH FLOW EXTRACTION
+    # =====================================
+
+
+    operating_cashflow = extract_value(
+        search_row(
+            cashflow,
+            [
+                "Operating activities"
+            ]
         )
-
-
-
-else:
-
-    st.info(
-        "Upload all three statements to activate analysis."
     )
