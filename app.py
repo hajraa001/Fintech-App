@@ -19,7 +19,20 @@ cashflow_file = st.file_uploader(
 )
 
 if balance_file and income_file and cashflow_file:
+    st.success("All 3 statements uploaded!")
 
+    balance_df = pd.read_excel(balance_file, skiprows=3)
+    income_df = pd.read_excel(income_file, skiprows=3)
+    cashflow_df = pd.read_excel(cashflow_file, skiprows=3)
+
+    st.write("Balance Sheet")
+    st.dataframe(balance_df.head(20))
+
+    st.write("Income Statement")
+    st.dataframe(income_df.head(20))
+
+    st.write("Cash Flow Statement")
+    st.dataframe(cashflow_df.head(20))
     st.success("All 3 statements uploaded!")
 
     balance_df = pd.read_excel(balance_file, skiprows=3)
