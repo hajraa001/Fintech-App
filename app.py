@@ -363,3 +363,362 @@ if balance_file and income_file and cashflow_file:
             ]
         )
     )
+    # =====================================
+    # CALCULATIONS
+    # =====================================
+
+    current_ratio = 0
+    quick_ratio = 0
+    debt_equity = 0
+    working_capital = 0
+
+
+    if current_liabilities != 0:
+
+        current_ratio = (
+            current_assets /
+            current_liabilities
+        )
+
+
+        quick_ratio = (
+            cash +
+            receivables
+        ) / current_liabilities
+
+
+
+    if equity != 0:
+
+        debt_equity = (
+            total_liabilities /
+            equity
+        )
+
+
+    working_capital = (
+        current_assets -
+        current_liabilities
+    )
+
+
+
+    # =====================================
+    # FINANCIAL HEALTH SCORE
+    # =====================================
+
+    score = 50
+
+
+    if current_ratio >= 1.5:
+
+        score += 15
+
+    elif current_ratio < 1:
+
+        score -= 15
+
+
+
+    if debt_equity < 1:
+
+        score += 15
+
+    else:
+
+        score -= 10
+
+
+
+    if net_income > 0:
+
+        score += 10
+
+
+    score = max(
+        0,
+        min(score,100)
+    )
+
+
+
+    # =====================================
+    # DASHBOARD PAGE
+    # =====================================
+
+    if page == "🏠 Dashboard":
+
+
+        st.header(
+            "Executive Dashboard"
+        )
+
+
+        col1,col2,col3,col4 = st.columns(4)
+
+
+        with col1:
+
+            st.metric(
+                "Financial Health Score",
+                f"{score}/100"
+            )
+
+
+        with col2:
+
+            st.metric(
+                "Revenue",
+                f"{revenue:,.0f}"
+            )
+
+
+        with col3:
+
+            st.metric(
+                "Net Income",
+                f"{net_income:,.0f}"
+            )
+
+
+        with col4:
+
+            st.metric(
+                "Total Assets",
+                f"{total_assets:,.0f}"
+            )
+
+
+
+        st.divider()
+
+
+        st.subheader(
+            "Financial Position"
+        )
+
+
+        col5,col6,col7 = st.columns(3)
+
+
+        with col5:
+
+            st.info(
+                f"""
+                Liquidity
+
+                Current Ratio:
+                {current_ratio:.2f}x
+                """
+            )
+
+
+        with col6:
+
+            st.info(
+                f"""
+                Debt Risk
+
+                Debt / Equity:
+                {debt_equity:.2f}
+                """
+            )
+
+
+        with col7:
+
+            st.info(
+                f"""
+                Working Capital
+
+                {working_capital:,.0f}
+                """
+            )
+
+
+
+        st.divider()
+
+
+        st.subheader(
+            "🤖 Analyst Summary"
+        )
+
+
+        if current_ratio >= 1.5:
+
+            st.success(
+                """
+                The company demonstrates a strong
+                liquidity position and appears capable
+                of covering short-term obligations.
+                """
+            )
+
+        else:
+
+            st.warning(
+                """
+                Liquidity requires monitoring as
+                short-term obligations may pressure
+                available resources.
+                """
+            )
+
+
+
+    # =====================================
+    # STATEMENTS PAGE
+    # =====================================
+
+    elif page == "📄 Statements":
+
+
+        st.header(
+            "Financial Statements"
+        )
+
+
+        tab1,tab2,tab3 = st.tabs(
+            [
+                "SOFP Balance Sheet",
+                "SOFL Income Statement",
+                "SOCF Cash Flow"
+            ]
+        )
+
+
+        with tab1:
+
+            st.dataframe(
+                balance,
+                use_container_width=True,
+                height=600
+            )
+
+
+        with tab2:
+
+            st.dataframe(
+                income,
+                use_container_width=True,
+                height=600
+            )
+
+
+        with tab3:
+
+            st.dataframe(
+                cashflow,
+                use_container_width=True,
+                height=600
+            )
+
+
+
+    # =====================================
+    # RATIOS PAGE
+    # =====================================
+
+    elif page == "📈 Ratios":
+
+
+        st.header(
+            "Financial Ratios"
+        )
+
+
+        ratio_data = pd.DataFrame(
+            {
+                "Metric":
+                [
+                    "Current Ratio",
+                    "Quick Ratio",
+                    "Debt / Equity",
+                    "Working Capital"
+                ],
+
+                "Value":
+                [
+                    round(current_ratio,2),
+                    round(quick_ratio,2),
+                    round(debt_equity,2),
+                    round(working_capital,2)
+                ]
+            }
+        )
+
+
+        st.dataframe(
+            ratio_data,
+            use_container_width=True
+        )
+
+
+        chart = px.bar(
+            ratio_data,
+            x="Metric",
+            y="Value",
+            title="Financial Ratio Overview"
+        )
+
+
+        st.plotly_chart(
+            chart,
+            use_container_width=True
+        )
+
+
+
+    # =====================================
+    # RISK ANALYSIS PAGE
+    # =====================================
+
+    elif page == "⚠️ Risk Analysis":
+
+
+        st.header(
+            "Financial Risk Assessment"
+        )
+
+
+        if debt_equity < 1:
+
+            st.success(
+                "🟢 Debt level appears manageable."
+            )
+
+        else:
+
+            st.warning(
+                "🟡 Debt level requires attention."
+            )
+
+
+        if current_ratio >= 1:
+
+            st.success(
+                "🟢 Liquidity position is acceptable."
+            )
+
+        else:
+
+            st.error(
+                "🔴 Liquidity risk detected."
+            )
+
+
+else:
+
+
+    st.info(
+        """
+        Upload:
+
+        ✅ SOFP Balance Sheet
+        ✅ SOFL Income Statement
+        ✅ SOCF Cash Flow
+
+        to activate the Financial Analyst dashboard.
+        """
+    )
